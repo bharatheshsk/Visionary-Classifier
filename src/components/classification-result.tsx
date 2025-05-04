@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Label } from "@/components/ui/label"; // Import the Label component
 
 interface ClassificationResultProps {
   imageDataUri: string | null;
