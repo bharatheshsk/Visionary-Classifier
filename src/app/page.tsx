@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -5,20 +6,28 @@ import type { ClassifyImageInput, ClassifyImageOutput } from '@/ai/flows/classif
 import { classifyImage } from '@/ai/flows/classify-image';
 import { ImageUploader } from '@/components/image-uploader';
 import { ClassificationResult } from '@/components/classification-result';
+import { ClassificationHistory } from '@/components/classification-history'; // Import new component
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Image as ImageIcon } from 'lucide-react';
+
+interface HistoryItem {
+  id: string;
+  imageDataUri: string;
+  result: ClassifyImageOutput;
+}
 
 export default function Home() {
   const [imageDataUri, setImageDataUri] = useState<string | null>(null);
   const [result, setResult] = useState<ClassifyImageOutput | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [classificationHistory, setClassificationHistory] = useState<HistoryItem[]>([]);
   const { toast } = useToast();
 
   const handleImageUpload = (dataUri: string) => {
     setImageDataUri(dataUri);
-    setResult(null); // Clear previous result
+    setResult(null); // Clear previous result for current classification display
     setError(null); // Clear previous error
     handleClassifyImage(dataUri); // Automatically classify after upload
   };
@@ -39,7 +48,14 @@ export default function Home() {
     try {
       const input: ClassifyImageInput = { photoDataUri: dataUri };
       const classificationResult = await classifyImage(input);
-      setResult(classificationResult);
+      setResult(classificationResult); // Set current result
+
+      // Add to history
+      setClassificationHistory(prevHistory => [
+        { imageDataUri: dataUri, result: classificationResult, id: `${new Date().toISOString()}-${Math.random()}` },
+        ...prevHistory
+      ]);
+
       toast({
         title: "Classification Successful",
         description: `Image classified as: ${classificationResult.description}`,
@@ -53,7 +69,7 @@ export default function Home() {
         description: errorMessage,
         variant: "destructive",
       });
-       setResult(null); // Clear result on error
+       setResult(null); // Clear current result on error
     } finally {
       setIsLoading(false);
     }
@@ -71,26 +87,14 @@ export default function Home() {
       <div className="w-full max-w-3xl space-y-8">
         <ImageUploader onImageUpload={handleImageUpload} isLoading={isLoading} />
 
-        {/* Remove the explicit classify button as classification happens on upload */}
-        {/* {imageDataUri && (
-            <Button onClick={() => handleClassifyImage(imageDataUri)} disabled={isLoading} className="w-full md:w-auto">
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Classifying...
-                </>
-              ) : (
-                'Classify Image'
-              )}
-            </Button>
-        )} */}
-
         <ClassificationResult
           imageDataUri={imageDataUri}
           result={result}
           isLoading={isLoading}
           error={error}
         />
+
+        <ClassificationHistory history={classificationHistory} />
       </div>
 
       <footer className="mt-16 text-center text-muted-foreground text-sm">
