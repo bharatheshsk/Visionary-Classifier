@@ -32,7 +32,7 @@ export default function LoginPage() {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     // Basic validation (you'll want to replace this with actual auth)
-    if (email === "user@example.com" && password === "password") {
+    if (email === "bharatheshsk@gmail.com" && password === "12345678") {
       toast({
         title: "Login Successful",
         description: "Welcome back!",
